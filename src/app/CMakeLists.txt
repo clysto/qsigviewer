@@ -10,6 +10,8 @@ add_executable(qsigviewer
         filedialog.ui
         signaldata.cpp
         signaldata.h
+        infinitydial.cpp
+        infinitydial.h
 )
 
 target_link_libraries(qsigviewer
@@ -19,7 +21,17 @@ target_link_libraries(qsigviewer
         QCustomPlot
 )
 
-set_target_properties(qsigviewer PROPERTIES
-        WIN32_EXECUTABLE ON
-        MACOSX_BUNDLE ON
-)
+if (CMAKE_BUILD_TYPE MATCHES "Release")
+    set_target_properties(qsigviewer PROPERTIES
+            WIN32_EXECUTABLE ON
+            MACOSX_BUNDLE ON
+    )
+endif ()
+
+
+if (WIN32 AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy
+            "$<TARGET_FILE_DIR:QCustomPlot>/libQCustomPlot.dll"
+            "$<TARGET_FILE_DIR:${PROJECT_NAME}>")
+endif ()

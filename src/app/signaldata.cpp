@@ -8,7 +8,7 @@ SignalData::SignalData(int sampleRate, const QString &path) : sampleRate(sampleR
   if (!file.open(QIODevice::ReadOnly)) {
     throw std::runtime_error("Cannot open file!");
   }
-  qint64 size = file.size();
+  auto size = file.size();
   data = QVector<double>(size / 4);
   time = QVector<double>(data.size());
   float temp;
