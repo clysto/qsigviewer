@@ -23,10 +23,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
   ui->sigview->yAxis->grid()->setZeroLinePen(Qt::NoPen);
   ui->sigview->xAxis->setUpperEnding(QCPLineEnding::esSpikeArrow);
   ui->sigview->yAxis->setUpperEnding(QCPLineEnding::esSpikeArrow);
-  ui->sigview->xAxis->setLabel("Time");
+  ui->sigview->xAxis->setLabel("Time (s)");
   ui->sigview->yAxis->setLabel("Amplitude");
   ui->sigview->xAxis->setLabelColor(Qt::white);
   ui->sigview->yAxis->setLabelColor(Qt::white);
+  ui->sigview->setInteractions(QCP::iRangeDrag);
 }
 
 MainWindow::~MainWindow() { delete ui; }
@@ -48,10 +49,55 @@ void MainWindow::handleSigOpen(const QString &filePath, int sampleRate) {
   ui->sigview->xAxis->setRange(0, signalData.getTime()[1000]);
   ui->sigview->yAxis->setRange(-1, 1);
   ui->sigview->graph(0)->setPen(QPen(QColor(255, 255, 0)));
-  ui->sigview->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
   ui->sigview->replot();
 }
 
-void MainWindow::handleOffsetChange(int value) { qDebug() << value; }
+void MainWindow::handleOffsetChange(int value) {
+  value = -value;
+  auto center = ui->sigview->yAxis->range().center();
+  auto range = ui->sigview->yAxis->range().size();
+  ui->sigview->yAxis->setRange(center - range / 2 + range * value / 100, center + range / 2 + range * value / 100);
+  ui->sigview->replot();
+}
 
-void MainWindow::handleScaleChange(int value) { qDebug() << value; }
+void MainWindow::handleScaleChange(int value) {
+  auto center = ui->sigview->yAxis->range().center();
+  auto range = ui->sigview->yAxis->range().size();
+  double d = range / 2;
+  d = d - d * value / 100;
+  if (d < 0.000001) {
+    d = 0.000001;
+  }
+  ui->sigview->yAxis->setRange(center - d, center + d);
+  ui->sigview->replot();
+}
+
+void MainWindow::handleTimeChange(int value) {
+  auto center = ui->sigview->xAxis->range().center();
+  auto range = ui->sigview->xAxis->range().size();
+  double d = range / 2;
+  d = d - d * value / 100;
+  if (d < 0.000001) {
+    d = 0.000001;
+  }
+  ui->sigview->xAxis->setRange(center - d, center + d);
+  ui->sigview->replot();
+}
+
+void MainWindow::handleDelayChange(int value) {
+  value = -value;
+  auto center = ui->sigview->xAxis->range().center();
+  auto range = ui->sigview->xAxis->range().size();
+  ui->sigview->xAxis->setRange(center - range / 2 + range * value / 100, center + range / 2 + range * value / 100);
+  ui->sigview->replot();
+}
+
+void MainWindow::handlePrintAction() {
+  int width = ui->sigview->width();
+  int height = ui->sigview->height();
+  QString filename = QDateTime::currentDateTime().toString("yyyyMMdd-hhmmss") + ".pdf";
+  ui->sigview->savePdf(filename, width, height, QCP::epAllowCosmetic, "QSigViewer");
+  QMessageBox msgBox;
+  msgBox.setText("Saved to " + filename);
+  msgBox.exec();
+}

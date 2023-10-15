@@ -1,7 +1,3 @@
-//
-// Created by maoyachen on 2023/10/13.
-//
-
 #ifndef QSIGVIEWER_INFINITYDIAL_H
 #define QSIGVIEWER_INFINITYDIAL_H
 

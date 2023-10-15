@@ -1,7 +1,3 @@
-//
-// Created by maoyachen on 2023/10/13.
-//
-
 #include <infinitydial.h>
 
 InfinityDial::InfinityDial(QWidget *parent) : QDial(parent) {

@@ -31,6 +31,9 @@ class MainWindow : public QMainWindow {
 
   void handleOffsetChange(int value);
   void handleScaleChange(int value);
+  void handleTimeChange(int value);
+  void handleDelayChange(int value);
+  void handlePrintAction();
 };
 
 #endif  // QSIGVIEWER_MAINWINDOW_H

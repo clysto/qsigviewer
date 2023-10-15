@@ -13,7 +13,7 @@ FileDialog::FileDialog(QWidget *parent) : QDialog(parent), ui(new Ui::FileDialog
 FileDialog::~FileDialog() { delete ui; }
 
 [[maybe_unused]] void FileDialog::openFileSelector() {
-  QString fileName = QFileDialog::getOpenFileName(this);
+  QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), QDir::homePath(), tr("All Files (*)"));
   if (!fileName.isEmpty()) {
     ui->filePathLineEdit->setText(fileName);
   }
