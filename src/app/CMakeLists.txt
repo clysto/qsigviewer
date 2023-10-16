@@ -21,6 +21,8 @@ target_link_libraries(qsigviewer
         QCustomPlot
 )
 
+target_compile_definitions(qsigviewer PRIVATE QCUSTOMPLOT_USE_LIBRARY)
+
 if (CMAKE_BUILD_TYPE MATCHES "Release")
     set_target_properties(qsigviewer PROPERTIES
             WIN32_EXECUTABLE ON

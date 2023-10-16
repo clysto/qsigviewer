@@ -28,6 +28,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
   ui->sigview->xAxis->setLabelColor(Qt::white);
   ui->sigview->yAxis->setLabelColor(Qt::white);
   ui->sigview->setInteractions(QCP::iRangeDrag);
+  ui->sigview->yAxis->setRange(-1, 1);
+  ui->sigview->xAxis->setRange(0, 5120);
 }
 
 MainWindow::~MainWindow() { delete ui; }
@@ -44,6 +46,7 @@ void MainWindow::handleSigOpen(const QString &filePath, int sampleRate) {
   SignalData *data = new Complex64SignalData(filePath, sampleRate);
   data->setup(ui->sigview);
   allSignals.push_back(data);
+  ui->sigview->replot();
 }
 
 void MainWindow::handleOffsetChange(int value) {
