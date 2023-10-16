@@ -50,6 +50,18 @@ MainWindow::MainWindow(QWidget *parent)
   ui->sigview->yAxis2->setVisible(true);
   ui->sigview->yAxis2->setTicks(false);
   ui->sigview->yAxis2->setTickLabels(false);
+  auto *hline = new QCPItemLine(ui->sigview);
+  hline->start->setType(QCPItemPosition::ptAxisRectRatio);
+  hline->start->setCoords(0, 0.5);
+  hline->end->setType(QCPItemPosition::ptAxisRectRatio);
+  hline->end->setCoords(1, 0.5);
+  hline->setPen(QPen(Qt::white));
+  auto *vline = new QCPItemLine(ui->sigview);
+  vline->start->setType(QCPItemPosition::ptAxisRectRatio);
+  vline->start->setCoords(0.5, 0);
+  vline->end->setType(QCPItemPosition::ptAxisRectRatio);
+  vline->end->setCoords(0.5, 1);
+  vline->setPen(QPen(Qt::white));
   handleTimeChange(0);
 }
 
