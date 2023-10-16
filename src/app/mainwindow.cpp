@@ -13,7 +13,9 @@ MainWindow::MainWindow(QWidget *parent)
   ui->setupUi(this);
   ui->sigview->setBackground(QBrush(QColor(0, 0, 0)));
   ui->sigview->xAxis->setBasePen(QPen(Qt::white, 1));
+  ui->sigview->xAxis2->setBasePen(QPen(Qt::white, 1));
   ui->sigview->yAxis->setBasePen(QPen(Qt::white, 1));
+  ui->sigview->yAxis2->setBasePen(QPen(Qt::white, 1));
   ui->sigview->xAxis->setTickPen(QPen(Qt::white, 1));
   ui->sigview->yAxis->setTickPen(QPen(Qt::white, 1));
   ui->sigview->xAxis->setSubTickPen(QPen(Qt::white, 1));
@@ -38,6 +40,16 @@ MainWindow::MainWindow(QWidget *parent)
   ui->sigview->yAxis->setRange(-1, 1);
   ui->sigview->xAxis->setRange(0, maxChunksVisible * chunkSize);
   ui->sigview->xAxis->setTicker(timeTicker);
+  ui->sigview->xAxis->setUpperEnding(QCPLineEnding::esNone);
+  ui->sigview->yAxis->setUpperEnding(QCPLineEnding::esNone);
+  ui->sigview->xAxis2->setUpperEnding(QCPLineEnding::esNone);
+  ui->sigview->yAxis2->setUpperEnding(QCPLineEnding::esNone);
+  ui->sigview->xAxis2->setVisible(true);
+  ui->sigview->xAxis2->setTicks(false);
+  ui->sigview->xAxis2->setTickLabels(false);
+  ui->sigview->yAxis2->setVisible(true);
+  ui->sigview->yAxis2->setTicks(false);
+  ui->sigview->yAxis2->setTickLabels(false);
   handleTimeChange(0);
 }
 
