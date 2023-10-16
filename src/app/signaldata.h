@@ -1,26 +1,46 @@
-//
-// Created by 毛亚琛 on 2023/10/13.
-//
-
 #ifndef QSIGVIEWER_SIGNALDATA_H
 #define QSIGVIEWER_SIGNALDATA_H
 
+#include <qcustomplot.h>
+
+#include <QFile>
+#include <QObject>
 #include <QString>
 #include <QVector>
 #include <vector>
 
-class SignalData {
- private:
+class SignalData : public QObject {
+  Q_OBJECT
+
+ protected:
   int sampleRate;
-  QVector<double> data;
-  QVector<double> time;
+  QFile signalFile;
+  QCPGraph* graph;
+  QCustomPlot* plot;
+  int chunkSize;
+  int currentChunk;
 
  public:
-  SignalData(int sampleRate, const QString &path);
+  explicit SignalData(int chunkSize = 5120);
+  void setup(QCustomPlot* qCustomPlot);
+  virtual void loadChunk(int chunkIndex) = 0;
 
-  const QVector<double> &getData();
+ public slots:
+  void updateData();
+};
 
-  const QVector<double> &getTime();
+class Complex64SignalData : public SignalData {
+  Q_OBJECT
+ public:
+  Complex64SignalData(const QString& signalPath, int sampleRate);
+  ~Complex64SignalData() override;
+
+  void loadChunk(int chunkIndex) override;
+
+ private:
+  QVector<double> realData;
+  QVector<double> imagData;
+  QVector<double> timeData;
 };
 
 #endif  // QSIGVIEWER_SIGNALDATA_H

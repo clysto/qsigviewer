@@ -35,21 +35,15 @@ MainWindow::~MainWindow() { delete ui; }
 void MainWindow::handleMenuAction(QAction *action) {
   if (action == ui->actionOpen) {
     FileDialog fileDialog;
-    connect(&fileDialog, SIGNAL(fileInfo(QString, int)), this, SLOT(handleSigOpen(QString, int)));
+    connect(&fileDialog, &FileDialog::fileInfo, this, &MainWindow::handleSigOpen);
     fileDialog.exec();
   }
 }
 
 void MainWindow::handleSigOpen(const QString &filePath, int sampleRate) {
-  SignalData signalData(sampleRate, filePath);
-  allSignals.push_back(signalData);
-  ui->sigview->clearGraphs();
-  ui->sigview->addGraph();
-  ui->sigview->graph(0)->setData(signalData.getTime(), signalData.getData());
-  ui->sigview->xAxis->setRange(0, signalData.getTime()[1000]);
-  ui->sigview->yAxis->setRange(-1, 1);
-  ui->sigview->graph(0)->setPen(QPen(QColor(255, 255, 0)));
-  ui->sigview->replot();
+  SignalData *data = new Complex64SignalData(filePath, sampleRate);
+  data->setup(ui->sigview);
+  allSignals.push_back(data);
 }
 
 void MainWindow::handleOffsetChange(int value) {

@@ -18,10 +18,10 @@ class MainWindow : public QMainWindow {
  public:
   explicit MainWindow(QWidget *parent = nullptr);
   ~MainWindow() override;
-  std::vector<SignalData> allSignals;
 
  private:
   Ui::MainWindow *ui;
+  QVector<SignalData *> allSignals;
 
  public slots:
 
