@@ -16,13 +16,14 @@ class SignalData : public QObject {
   QFile signalFile;
   QCustomPlot* plot;
   int chunkSize;
-  int maxChunksVisible;
+  int maxChunksCached;
   QQueue<int> loadedChunks;
 
  public:
   explicit SignalData(int chunkSize = 5120, int maxChunksVisible = 1);
   virtual void setup(QCustomPlot* qCustomPlot) = 0;
   virtual void loadChunk(int chunkIndex) = 0;
+  virtual void unloadChunk(int chunkIndex) = 0;
 
  public slots:
   void updateData();
@@ -30,12 +31,14 @@ class SignalData : public QObject {
 
 class Complex64SignalData : public SignalData {
   Q_OBJECT
+
  public:
-  Complex64SignalData(const QString& signalPath, int sampleRate);
+  Complex64SignalData(const QString& signalPath, int sampleRate, int chunkSize, int maxChunksVisible);
   ~Complex64SignalData() override;
 
   void setup(QCustomPlot* qCustomPlot) override;
   void loadChunk(int chunkIndex) override;
+  void unloadChunk(int chunkIndex) override;
 
  private:
   QCPGraph* graphI;

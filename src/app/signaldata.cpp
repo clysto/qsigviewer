@@ -3,8 +3,8 @@
 #include <QFile>
 #include <QVector>
 
-Complex64SignalData::Complex64SignalData(const QString &signalPath, int sampleRate)
-    : SignalData(),
+Complex64SignalData::Complex64SignalData(const QString &signalPath, int sampleRate, int chunkSize, int maxChunksCached)
+    : SignalData(chunkSize, maxChunksCached),
       graphI(nullptr),
       graphQ(nullptr),
       graphDataI(new QCPDataContainer<QCPGraphData>),
@@ -31,13 +31,22 @@ void Complex64SignalData::loadChunk(int chunkIndex) {
 
   signalFile.seek(chunkIndex * chunkSize * 8);
   float temp;
+  qint64 n;
+
+  qDebug() << "reading chunk" << chunkIndex << "of" << chunkCount << "chunks";
 
   for (int i = 0; i < chunkSize; ++i) {
     itI->key = i + chunkIndex * chunkSize;
     itQ->key = i + chunkIndex * chunkSize;
-    signalFile.read(reinterpret_cast<char *>(&temp), sizeof(float));
+    n = signalFile.read(reinterpret_cast<char *>(&temp), sizeof(float));
+    if (n == 0) {
+      break;
+    }
     itI->value = temp;
-    signalFile.read(reinterpret_cast<char *>(&temp), sizeof(float));
+    n = signalFile.read(reinterpret_cast<char *>(&temp), sizeof(float));
+    if (n == 0) {
+      break;
+    }
     itQ->value = temp;
     ++itI;
     ++itQ;
@@ -45,16 +54,6 @@ void Complex64SignalData::loadChunk(int chunkIndex) {
 
   graphDataI->add(tempDataI);
   graphDataQ->add(tempDataQ);
-
-  loadedChunks.enqueue(chunkIndex);
-
-  while (loadedChunks.size() > maxChunksVisible + 1) {
-    int chunk = loadedChunks.dequeue();
-    int from = chunk * chunkSize;
-    int to = from + chunkSize;
-    graphDataI->remove(from, to);
-    graphDataQ->remove(from, to);
-  }
 }
 
 void Complex64SignalData::setup(QCustomPlot *qCustomPlot) {
@@ -68,18 +67,28 @@ void Complex64SignalData::setup(QCustomPlot *qCustomPlot) {
   QObject::connect(plot, QOverload<>::of(&QCustomPlot::beforeReplot), this, &SignalData::updateData);
 }
 
+void Complex64SignalData::unloadChunk(int chunkIndex) {
+  int from = chunkIndex * chunkSize;
+  int to = from + chunkSize;
+  graphDataI->remove(from, to);
+  graphDataQ->remove(from, to);
+}
+
 void SignalData::updateData() {
   QCPRange range = plot->xAxis->range();
-  double start = range.lower;
-  double end = range.upper;
-  int chunk1 = static_cast<int>(start / chunkSize);
-  int chunk2 = static_cast<int>(end / chunkSize);
-  for (int i = chunk1; i <= chunk2; ++i) {
-    if (!loadedChunks.contains(i)) {
-      loadChunk(i);
+  int startChunk = static_cast<int>(range.lower / chunkSize);
+  int endChunk = static_cast<int>(range.upper / chunkSize);
+  for (int chunkIndex = startChunk; chunkIndex <= endChunk; ++chunkIndex) {
+    if (!loadedChunks.contains(chunkIndex)) {
+      loadChunk(chunkIndex);
+      loadedChunks.enqueue(chunkIndex);
+      while (loadedChunks.size() > maxChunksCached + 1) {
+        int chunk = loadedChunks.dequeue();
+        unloadChunk(chunk);
+      }
     }
   }
 }
 
-SignalData::SignalData(int chunkSize, int maxChunksVisible)
-    : chunkSize(chunkSize), maxChunksVisible(maxChunksVisible), plot(nullptr), sampleRate(1) {}
+SignalData::SignalData(int chunkSize, int maxChunksCached)
+    : chunkSize(chunkSize), maxChunksCached(maxChunksCached), plot(nullptr), sampleRate(1) {}

@@ -12,6 +12,10 @@ add_executable(qsigviewer
         signaldata.h
         infinitydial.cpp
         infinitydial.h
+        timeticker.cpp
+        timeticker.h
+        utils.cpp
+        utils.h
 )
 
 target_link_libraries(qsigviewer

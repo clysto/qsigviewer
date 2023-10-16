@@ -2,6 +2,7 @@
 #define QSIGVIEWER_MAINWINDOW_H
 
 #include <signaldata.h>
+#include <timeticker.h>
 
 #include <QMainWindow>
 #include <vector>
@@ -22,6 +23,9 @@ class MainWindow : public QMainWindow {
  private:
   Ui::MainWindow *ui;
   QVector<SignalData *> allSignals;
+  int maxChunksVisible;
+  int chunkSize;
+  QSharedPointer<TimeTicker> timeTicker;
 
  public slots:
 

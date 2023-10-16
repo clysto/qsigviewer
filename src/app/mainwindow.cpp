@@ -1,8 +1,15 @@
 #include <filedialog.h>
 #include <mainwindow.h>
+#include <timeticker.h>
 #include <ui_MainWindow.h>
+#include <utils.h>
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent),
+      ui(new Ui::MainWindow),
+      maxChunksVisible(5),
+      chunkSize(10240),
+      timeTicker(new TimeTicker(1000)) {
   ui->setupUi(this);
   ui->sigview->setBackground(QBrush(QColor(0, 0, 0)));
   ui->sigview->xAxis->setBasePen(QPen(Qt::white, 1));
@@ -29,7 +36,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
   ui->sigview->yAxis->setLabelColor(Qt::white);
   ui->sigview->setInteractions(QCP::iRangeDrag);
   ui->sigview->yAxis->setRange(-1, 1);
-  ui->sigview->xAxis->setRange(0, 5120);
+  ui->sigview->xAxis->setRange(0, maxChunksVisible * chunkSize);
+  ui->sigview->xAxis->setTicker(timeTicker);
+  handleTimeChange(0);
 }
 
 MainWindow::~MainWindow() { delete ui; }
@@ -43,9 +52,11 @@ void MainWindow::handleMenuAction(QAction *action) {
 }
 
 void MainWindow::handleSigOpen(const QString &filePath, int sampleRate) {
-  SignalData *data = new Complex64SignalData(filePath, sampleRate);
+  SignalData *data = new Complex64SignalData(filePath, sampleRate, chunkSize, 100);
   data->setup(ui->sigview);
   allSignals.push_back(data);
+  timeTicker->setSampleRate(sampleRate);
+  handleTimeChange(0);
   ui->sigview->replot();
 }
 
@@ -77,6 +88,11 @@ void MainWindow::handleTimeChange(int value) {
   if (d < 0.000001) {
     d = 0.000001;
   }
+  if (2 * d > maxChunksVisible * chunkSize) {
+    ui->statusBar->showMessage("Zoomed out to maximum!", 2000);
+    return;
+  }
+  ui->timeLabel->setText(Utils::humanReadableTime(2 * d, timeTicker->getSampleRate()));
   ui->sigview->xAxis->setRange(center - d, center + d);
   ui->sigview->replot();
 }
