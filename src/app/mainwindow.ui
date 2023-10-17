@@ -291,6 +291,34 @@
         </widget>
        </item>
        <item>
+        <widget class="QGroupBox" name="groupBox_4">
+         <property name="title">
+          <string>Measure</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_4">
+          <property name="leftMargin">
+           <number>3</number>
+          </property>
+          <property name="topMargin">
+           <number>3</number>
+          </property>
+          <property name="rightMargin">
+           <number>3</number>
+          </property>
+          <property name="bottomMargin">
+           <number>3</number>
+          </property>
+          <item>
+           <widget class="QPushButton" name="psdButton">
+            <property name="text">
+             <string>PSD</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
         <spacer name="verticalSpacer">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -450,12 +478,28 @@
    <slot>handlePrintAction()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>963</x>
-     <y>326</y>
+     <x>985</x>
+     <y>321</y>
     </hint>
     <hint type="destinationlabel">
      <x>1064</x>
      <y>429</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>psdButton</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>handlePsdOpen()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>923</x>
+     <y>362</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1097</x>
+     <y>384</y>
     </hint>
    </hints>
   </connection>
@@ -467,5 +511,6 @@
   <slot>handleTimeChange(int)</slot>
   <slot>handleDelayChange(int)</slot>
   <slot>handlePrintAction()</slot>
+  <slot>handlePsdOpen()</slot>
  </slots>
 </ui>

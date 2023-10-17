@@ -1,6 +1,8 @@
 #ifndef QSIGVIEWER_FILEDIALOG_H
 #define QSIGVIEWER_FILEDIALOG_H
 
+#include <signaldata.h>
+
 #include <QDialog>
 
 QT_BEGIN_NAMESPACE
@@ -22,13 +24,13 @@ class FileDialog : public QDialog {
 
  public slots:
 
-  [[maybe_unused]] void openFileSelector();
+  void openFileSelector();
 
   void done();
 
  signals:
 
-  void fileInfo(const QString filePath, int sampleRate);
+  void fileInfo(SignalInfo signalInfo);
 };
 
 #endif  // QSIGVIEWER_FILEDIALOG_H

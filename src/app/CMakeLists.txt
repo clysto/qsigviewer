@@ -1,5 +1,3 @@
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-
 add_executable(qsigviewer
         main.cpp
         mainwindow.cpp
@@ -16,13 +14,21 @@ add_executable(qsigviewer
         timeticker.h
         utils.cpp
         utils.h
+        spectrumwin.cpp
+        spectrumwin.h
+        spectrumwin.ui
 )
+
+set(FFTW3_DIR "C:/Users/maoyachen/libs/fftw-3.3.5-dll64")
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${FFTW3_DIR})
 
 target_link_libraries(qsigviewer
         Qt::Core
         Qt::Gui
         Qt::Widgets
         QCustomPlot
+        "${FFTW3_DIR}/libfftw3-3.dll"
 )
 
 target_compile_definitions(qsigviewer PRIVATE QCUSTOMPLOT_USE_LIBRARY)
