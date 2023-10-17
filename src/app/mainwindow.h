@@ -22,22 +22,22 @@ class MainWindow : public QMainWindow {
 
  private:
   Ui::MainWindow *ui;
-  QVector<SignalData *> allSignals;
   int maxChunksVisible;
   int chunkSize;
   QSharedPointer<TimeTicker> timeTicker;
+  SignalData *signalData;
 
  public slots:
 
   [[maybe_unused]] void handleMenuAction(QAction *action);
 
-  void handleSigOpen(const QString &filePath, int sampleRate);
-
+  void handleSigOpen(const SignalInfo& signalInfo);
   void handleOffsetChange(int value);
   void handleScaleChange(int value);
   void handleTimeChange(int value);
   void handleDelayChange(int value);
   void handlePrintAction();
+  void handlePsdOpen();
 };
 
 #endif  // QSIGVIEWER_MAINWINDOW_H

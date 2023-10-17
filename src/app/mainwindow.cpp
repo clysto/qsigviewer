@@ -1,5 +1,6 @@
 #include <filedialog.h>
 #include <mainwindow.h>
+#include <spectrumwin.h>
 #include <timeticker.h>
 #include <ui_MainWindow.h>
 #include <utils.h>
@@ -9,47 +10,18 @@ MainWindow::MainWindow(QWidget *parent)
       ui(new Ui::MainWindow),
       maxChunksVisible(5),
       chunkSize(10240),
-      timeTicker(new TimeTicker(1000)) {
+      timeTicker(new TimeTicker(1000)),
+      signalData(nullptr) {
   ui->setupUi(this);
-  ui->sigview->setBackground(QBrush(QColor(0, 0, 0)));
-  ui->sigview->xAxis->setBasePen(QPen(Qt::white, 1));
-  ui->sigview->xAxis2->setBasePen(QPen(Qt::white, 1));
-  ui->sigview->yAxis->setBasePen(QPen(Qt::white, 1));
-  ui->sigview->yAxis2->setBasePen(QPen(Qt::white, 1));
-  ui->sigview->xAxis->setTickPen(QPen(Qt::white, 1));
-  ui->sigview->yAxis->setTickPen(QPen(Qt::white, 1));
-  ui->sigview->xAxis->setSubTickPen(QPen(Qt::white, 1));
-  ui->sigview->yAxis->setSubTickPen(QPen(Qt::white, 1));
-  ui->sigview->xAxis->setTickLabelColor(Qt::white);
-  ui->sigview->yAxis->setTickLabelColor(Qt::white);
-  ui->sigview->xAxis->grid()->setPen(QPen(QColor(140, 140, 140), 1, Qt::DotLine));
-  ui->sigview->yAxis->grid()->setPen(QPen(QColor(140, 140, 140), 1, Qt::DotLine));
-  ui->sigview->xAxis->grid()->setSubGridPen(QPen(QColor(80, 80, 80), 1, Qt::DotLine));
-  ui->sigview->yAxis->grid()->setSubGridPen(QPen(QColor(80, 80, 80), 1, Qt::DotLine));
-  ui->sigview->xAxis->grid()->setSubGridVisible(true);
-  ui->sigview->yAxis->grid()->setSubGridVisible(true);
-  ui->sigview->xAxis->grid()->setZeroLinePen(Qt::NoPen);
-  ui->sigview->yAxis->grid()->setZeroLinePen(Qt::NoPen);
-  ui->sigview->xAxis->setUpperEnding(QCPLineEnding::esSpikeArrow);
-  ui->sigview->yAxis->setUpperEnding(QCPLineEnding::esSpikeArrow);
+  Utils::applyPlotDarkTheme(ui->sigview, true);
+
   ui->sigview->xAxis->setLabel("Time (s)");
   ui->sigview->yAxis->setLabel("Amplitude");
-  ui->sigview->xAxis->setLabelColor(Qt::white);
-  ui->sigview->yAxis->setLabelColor(Qt::white);
   ui->sigview->setInteractions(QCP::iRangeDrag);
   ui->sigview->yAxis->setRange(-1, 1);
   ui->sigview->xAxis->setRange(0, maxChunksVisible * chunkSize);
   ui->sigview->xAxis->setTicker(timeTicker);
-  ui->sigview->xAxis->setUpperEnding(QCPLineEnding::esNone);
-  ui->sigview->yAxis->setUpperEnding(QCPLineEnding::esNone);
-  ui->sigview->xAxis2->setUpperEnding(QCPLineEnding::esNone);
-  ui->sigview->yAxis2->setUpperEnding(QCPLineEnding::esNone);
-  ui->sigview->xAxis2->setVisible(true);
-  ui->sigview->xAxis2->setTicks(false);
-  ui->sigview->xAxis2->setTickLabels(false);
-  ui->sigview->yAxis2->setVisible(true);
-  ui->sigview->yAxis2->setTicks(false);
-  ui->sigview->yAxis2->setTickLabels(false);
+
   auto *hline = new QCPItemLine(ui->sigview);
   hline->start->setType(QCPItemPosition::ptAxisRectRatio);
   hline->start->setCoords(0, 0.5);
@@ -75,11 +47,14 @@ void MainWindow::handleMenuAction(QAction *action) {
   }
 }
 
-void MainWindow::handleSigOpen(const QString &filePath, int sampleRate) {
-  SignalData *data = new Complex64SignalData(filePath, sampleRate, chunkSize, 100);
-  data->setup(ui->sigview);
-  allSignals.push_back(data);
-  timeTicker->setSampleRate(sampleRate);
+void MainWindow::handleSigOpen(const SignalInfo &signalInfo) {
+  delete signalData;
+  if (signalInfo.type == SignalInfo::Type::Float32) {
+    signalData = new Float32SignalData(ui->sigview, signalInfo, chunkSize, 100);
+  } else if (signalInfo.type == SignalInfo::Type::Complex64) {
+    signalData = new Complex64SignalData(ui->sigview, signalInfo, chunkSize, 100);
+  }
+  timeTicker->setSampleRate(signalInfo.sampleRate);
   handleTimeChange(0);
   ui->sigview->replot();
 }
@@ -137,4 +112,12 @@ void MainWindow::handlePrintAction() {
   QMessageBox msgBox;
   msgBox.setText("Saved to " + filename);
   msgBox.exec();
+}
+
+void MainWindow::handlePsdOpen() {
+  QVector<double> frequency;
+  QVector<double> psd;
+  signalData->currentPSD(frequency, psd);
+  auto *win = new SpectrumWin(this, frequency, psd);
+  win->show();
 }
