@@ -1,3 +1,5 @@
+set(app_icon_resource_windows "${CMAKE_CURRENT_SOURCE_DIR}/resources/qsigviewer.rc")
+
 add_executable(qsigviewer
         main.cpp
         mainwindow.cpp
@@ -17,6 +19,7 @@ add_executable(qsigviewer
         spectrumwin.cpp
         spectrumwin.h
         spectrumwin.ui
+        ${app_icon_resource_windows}
 )
 
 set(FFTW3_DIR "C:/Users/maoyachen/libs/fftw-3.3.5-dll64")
