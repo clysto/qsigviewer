@@ -39,10 +39,10 @@ endif ()
 if (WIN32)
     set(FFTW3_INCLUDE_DIRS "${FFTW3_DIR}")
     set(FFTW3_LIBRARIES "${FFTW3_DIR}/libfftw3-3.dll")
-else ()
-    set(FFTW3_LIBRARIES /usr/local/Cellar/fftw/3.3.10_1/lib/libfftw3.dylib)
-    set(FFTW3_LIBRARY_DIRS /usr/local/Cellar/fftw/3.3.10_1/lib)
-    set(FFTW3_INCLUDE_DIRS /usr/local/Cellar/fftw/3.3.10_1/include)
+elseif (APPLE)
+    set(FFTW3_LIBRARIES /usr/local/opt/fftw/lib/libfftw3.dylib)
+    set(FFTW3_LIBRARY_DIRS /usr/local/opt/fftw/lib)
+    set(FFTW3_INCLUDE_DIRS /usr/local/opt/fftw/include)
 endif ()
 
 target_include_directories(qsigviewer PRIVATE ${FFTW3_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR})
@@ -69,4 +69,17 @@ if (WIN32 AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
             COMMAND ${CMAKE_COMMAND} -E copy
             "$<TARGET_FILE_DIR:QCustomPlot>/libQCustomPlot.dll"
             "$<TARGET_FILE_DIR:${PROJECT_NAME}>")
+endif ()
+
+
+if (CMAKE_BUILD_TYPE MATCHES Release)
+    if (WIN32)
+        set(DEPLOY_CMD windeployqt)
+    elseif (APPLE)
+        get_filename_component(QT_MAC_QT_ROOT "${Qt6Core_DIR}/../../.." ABSOLUTE)
+        find_program(QT_MAC_DEPLOY_APP macdeployqt PATHS ${QT_MAC_QT_ROOT}/bin)
+        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+                COMMAND ${QT_MAC_DEPLOY_APP} qsigviewer.app "-dmg"
+        )
+    endif ()
 endif ()
