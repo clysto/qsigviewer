@@ -50,7 +50,7 @@
       </property>
       <property name="minimumSize">
        <size>
-        <width>160</width>
+        <width>190</width>
         <height>0</height>
        </size>
       </property>
@@ -83,10 +83,10 @@
            <number>3</number>
           </property>
           <item>
-           <widget class="QSpinBox" name="spinBox"/>
+           <widget class="QLineEdit" name="timeInput"/>
           </item>
           <item>
-           <widget class="QSlider" name="horizontalSlider">
+           <widget class="QSlider" name="timeSlider">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
             </property>
@@ -309,11 +309,34 @@
            <number>3</number>
           </property>
           <item>
-           <widget class="QPushButton" name="psdButton">
-            <property name="text">
-             <string>PSD</string>
-            </property>
-           </widget>
+           <layout class="QHBoxLayout" name="horizontalLayout_2">
+            <item>
+             <widget class="QPushButton" name="psdButton">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>PSD</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButton">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Cursors</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
          </layout>
         </widget>
@@ -352,7 +375,7 @@
      <x>0</x>
      <y>0</y>
      <width>1000</width>
-     <height>22</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -414,8 +437,8 @@
    <slot>handleOffsetChange(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>876</x>
-     <y>134</y>
+     <x>892</x>
+     <y>186</y>
     </hint>
     <hint type="destinationlabel">
      <x>1116</x>
@@ -430,8 +453,8 @@
    <slot>handleScaleChange(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>951</x>
-     <y>135</y>
+     <x>966</x>
+     <y>186</y>
     </hint>
     <hint type="destinationlabel">
      <x>1038</x>
@@ -462,8 +485,8 @@
    <slot>handleDelayChange(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>893</x>
-     <y>229</y>
+     <x>892</x>
+     <y>270</y>
     </hint>
     <hint type="destinationlabel">
      <x>1139</x>
@@ -478,8 +501,8 @@
    <slot>handlePrintAction()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>985</x>
-     <y>321</y>
+     <x>980</x>
+     <y>359</y>
     </hint>
     <hint type="destinationlabel">
      <x>1064</x>
@@ -494,12 +517,44 @@
    <slot>handlePsdOpen()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>923</x>
-     <y>362</y>
+     <x>899</x>
+     <y>421</y>
     </hint>
     <hint type="destinationlabel">
      <x>1097</x>
      <y>384</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>timeInput</sender>
+   <signal>editingFinished()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>handleTimeInput()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>908</x>
+     <y>64</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1111</x>
+     <y>139</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>timeSlider</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>handleTimeSliderChange(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>847</x>
+     <y>89</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1093</x>
+     <y>236</y>
     </hint>
    </hints>
   </connection>
@@ -512,5 +567,7 @@
   <slot>handleDelayChange(int)</slot>
   <slot>handlePrintAction()</slot>
   <slot>handlePsdOpen()</slot>
+  <slot>handleTimeInput()</slot>
+  <slot>handleTimeSliderChange(int)</slot>
  </slots>
 </ui>

@@ -31,13 +31,16 @@ class MainWindow : public QMainWindow {
 
   [[maybe_unused]] void handleMenuAction(QAction *action);
 
-  void handleSigOpen(const SignalInfo& signalInfo);
+  void handleSigOpen(const SignalInfo &signalInfo);
   void handleOffsetChange(int value);
   void handleScaleChange(int value);
   void handleTimeChange(int value);
   void handleDelayChange(int value);
   void handlePrintAction();
   void handlePsdOpen();
+  void handleXRangeChanged(const QCPRange &range);
+  void handleTimeInput();
+  void handleTimeSliderChange(int value);
 };
 
 #endif  // QSIGVIEWER_MAINWINDOW_H

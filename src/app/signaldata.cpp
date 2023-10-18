@@ -19,8 +19,20 @@ void SignalData::updateData() {
   }
 }
 
+qsizetype SignalData::signalSamples() {
+  if (signalInfo.type == SignalInfo::Type::Complex64) {
+    return signalFile.size() / 8;
+  } else {
+    return signalFile.size() / 4;
+  }
+}
+
 SignalData::SignalData(QCustomPlot *plot, SignalInfo signalInfo, int chunkSize, int maxChunksCached)
     : chunkSize(chunkSize), maxChunksCached(maxChunksCached), plot(plot), signalInfo(signalInfo) {
+  this->signalFile.setFileName(signalInfo.path);
+  if (!signalFile.open(QIODevice::ReadOnly)) {
+    throw std::runtime_error("Cannot open file!");
+  }
   QObject::connect(plot, QOverload<>::of(&QCustomPlot::beforeReplot), this, &SignalData::updateData);
 }
 
@@ -31,10 +43,6 @@ Complex64SignalData::Complex64SignalData(QCustomPlot *plot, SignalInfo signalInf
       graphQ(nullptr),
       graphDataI(new QCPDataContainer<QCPGraphData>),
       graphDataQ(new QCPDataContainer<QCPGraphData>) {
-  this->signalFile.setFileName(signalInfo.path);
-  if (!signalFile.open(QIODevice::ReadOnly)) {
-    throw std::runtime_error("Cannot open file!");
-  }
   graphI = plot->addGraph();
   graphQ = plot->addGraph();
   graphI->setData(graphDataI);
@@ -110,10 +118,6 @@ Float32SignalData::Float32SignalData(QCustomPlot *plot, SignalInfo signalInfo, i
     : SignalData(plot, signalInfo, chunkSize, maxChunksCached),
       graph(nullptr),
       graphData(new QCPDataContainer<QCPGraphData>) {
-  this->signalFile.setFileName(signalInfo.path);
-  if (!signalFile.open(QIODevice::ReadOnly)) {
-    throw std::runtime_error("Cannot open file!");
-  }
   graph = plot->addGraph();
   graph->setData(graphData);
   graph->setPen(QPen(Qt::yellow));
@@ -158,4 +162,17 @@ void Float32SignalData::unloadChunk(int chunkIndex) {
   graphData->remove(from, to);
 }
 
-void Float32SignalData::currentPSD(QVector<double> &frequency, QVector<double> &psd) {}
+void Float32SignalData::currentPSD(QVector<double> &frequency, QVector<double> &psd) {
+  int from = plot->xAxis->range().lower;
+  int to = plot->xAxis->range().upper;
+  QVector<double> real(to - from);
+  QVector<double> imag(to - from);
+  for (int i = from; i < to; ++i) {
+    real[i - from] = graphData->at(i)->value;
+    imag[i - from] = 0;
+  }
+  if (to - from < 1024) {
+    throw std::runtime_error("Not enough data for PSD!");
+  }
+  Utils::psd(real, imag, 1024, signalInfo.sampleRate, signalInfo.centerFrequency, frequency, psd);
+}

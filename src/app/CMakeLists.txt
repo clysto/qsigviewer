@@ -1,6 +1,13 @@
-set(app_icon_resource_windows "${CMAKE_CURRENT_SOURCE_DIR}/resources/qsigviewer.rc")
+if (WIN32)
+    set(app_icon_resource_windows "${CMAKE_CURRENT_SOURCE_DIR}/resources/qsigviewer.rc")
+elseif (APPLE)
+    set(MACOSX_BUNDLE_ICON_FILE qsigviewer.icns)
+    set(MACOSX_BUNDLE_ICON_PATH ${CMAKE_CURRENT_LIST_DIR}/resources/qsigviewer.icns)
+    set_source_files_properties(${MACOSX_BUNDLE_ICON_PATH} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
+    set(app_icon_resource_windows)
+endif ()
 
-add_executable(qsigviewer
+set(SOURCES
         main.cpp
         mainwindow.cpp
         mainwindow.h
@@ -22,16 +29,30 @@ add_executable(qsigviewer
         ${app_icon_resource_windows}
 )
 
-set(FFTW3_DIR "C:/Users/maoyachen/libs/fftw-3.3.5-dll64")
+if (APPLE)
+    add_executable(qsigviewer MACOSX_BUNDLE ${MACOSX_BUNDLE_ICON_PATH} ${SOURCES})
+else ()
+    add_executable(qsigviewer ${SOURCES})
+endif ()
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${FFTW3_DIR})
+
+if (WIN32)
+    set(FFTW3_INCLUDE_DIRS "${FFTW3_DIR}")
+    set(FFTW3_LIBRARIES "${FFTW3_DIR}/libfftw3-3.dll")
+else ()
+    set(FFTW3_LIBRARIES /usr/local/Cellar/fftw/3.3.10_1/lib/libfftw3.dylib)
+    set(FFTW3_LIBRARY_DIRS /usr/local/Cellar/fftw/3.3.10_1/lib)
+    set(FFTW3_INCLUDE_DIRS /usr/local/Cellar/fftw/3.3.10_1/include)
+endif ()
+
+target_include_directories(qsigviewer PRIVATE ${FFTW3_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_libraries(qsigviewer
         Qt::Core
         Qt::Gui
         Qt::Widgets
         QCustomPlot
-        "${FFTW3_DIR}/libfftw3-3.dll"
+        ${FFTW3_LIBRARIES}
 )
 
 target_compile_definitions(qsigviewer PRIVATE QCUSTOMPLOT_USE_LIBRARY)
@@ -42,7 +63,6 @@ if (CMAKE_BUILD_TYPE MATCHES "Release")
             MACOSX_BUNDLE ON
     )
 endif ()
-
 
 if (WIN32 AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
     add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD

@@ -19,11 +19,11 @@ QString Utils::humanReadableTime(int sampleIndex, int sampleRate) {
   return QString::number(timeInSeconds * 1000000000000.0, 'f', 1) + "ps";
 }
 
-void Utils::psd(const QVector<double>& real, const QVector<double>& imag, int nfft, double fs, double fc, QVector<double>& freqs, QVector<double>& pxx)
-{
+void Utils::psd(const QVector<double>& real, const QVector<double>& imag, int nfft, double fs, double fc,
+                QVector<double>& freqs, QVector<double>& pxx) {
   int noverlap = nfft / 2;  // 50% overlap
   int nsegments = (real.size() - noverlap) / (nfft - noverlap);
-  int nfreqs = nfft / 2 + 1;
+  int nfreqs = nfft + 1;
 
   freqs.resize(nfreqs);
   pxx.resize(nfreqs);
@@ -48,15 +48,18 @@ void Utils::psd(const QVector<double>& real, const QVector<double>& imag, int nf
     plan = fftw_plan_dft_1d(nfft, fft_out, fft_out, FFTW_FORWARD, FFTW_ESTIMATE);
     fftw_execute(plan);
     // Accumulate power
-    for (int i = 0; i < nfreqs; ++i) {
-      pxx[i] += (fft_out[i][0] * fft_out[i][0] + fft_out[i][1] * fft_out[i][1]) / nsegments;
+    for (int i = 0; i < nfreqs / 2; ++i) {  // positive frequencies
+      pxx[nfreqs / 2 + i] += (fft_out[i][0] * fft_out[i][0] + fft_out[i][1] * fft_out[i][1]) / nsegments;
+    }
+    for (int i = nfreqs / 2; i < nfreqs; ++i) {  // negative frequencies
+      pxx[i - nfreqs / 2] += (fft_out[i][0] * fft_out[i][0] + fft_out[i][1] * fft_out[i][1]) / nsegments;
     }
   }
 
   // Normalize and convert to dB
   for (int i = 0; i < nfreqs; ++i) {
     pxx[i] = 10 * std::log10(pxx[i]);
-    freqs[i] = i * fs / nfft + fc;
+    freqs[i] = (i - nfreqs / 2) * fs / nfft + fc;
   }
 
   fftw_destroy_plan(plan);

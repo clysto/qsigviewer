@@ -22,19 +22,10 @@ MainWindow::MainWindow(QWidget *parent)
   ui->sigview->xAxis->setRange(0, maxChunksVisible * chunkSize);
   ui->sigview->xAxis->setTicker(timeTicker);
 
-  auto *hline = new QCPItemLine(ui->sigview);
-  hline->start->setType(QCPItemPosition::ptAxisRectRatio);
-  hline->start->setCoords(0, 0.5);
-  hline->end->setType(QCPItemPosition::ptAxisRectRatio);
-  hline->end->setCoords(1, 0.5);
-  hline->setPen(QPen(Qt::white));
-  auto *vline = new QCPItemLine(ui->sigview);
-  vline->start->setType(QCPItemPosition::ptAxisRectRatio);
-  vline->start->setCoords(0.5, 0);
-  vline->end->setType(QCPItemPosition::ptAxisRectRatio);
-  vline->end->setCoords(0.5, 1);
-  vline->setPen(QPen(Qt::white));
   handleTimeChange(0);
+
+  connect(ui->sigview->xAxis, QOverload<const QCPRange &>::of(&QCPAxis::rangeChanged), this,
+          &MainWindow::handleXRangeChanged);
 }
 
 MainWindow::~MainWindow() { delete ui; }
@@ -115,9 +106,51 @@ void MainWindow::handlePrintAction() {
 }
 
 void MainWindow::handlePsdOpen() {
+  if (signalData == nullptr) {
+    ui->statusBar->showMessage("No signal open!", 2000);
+    return;
+  }
   QVector<double> frequency;
   QVector<double> psd;
-  signalData->currentPSD(frequency, psd);
+  try {
+    signalData->currentPSD(frequency, psd);
+  } catch (std::exception &e) {
+    ui->statusBar->showMessage(e.what(), 2000);
+    return;
+  }
   auto *win = new SpectrumWin(this, frequency, psd);
   win->show();
+}
+
+void MainWindow::handleXRangeChanged(const QCPRange &range) {
+  auto center = range.center();
+  ui->timeInput->setText(QString::number(center / timeTicker->getSampleRate()) + "s");
+  if (signalData != nullptr) {
+    qDebug() << center << signalData->signalSamples();
+    ui->timeSlider->setValue(center / signalData->signalSamples() * 100);
+  }
+}
+
+void MainWindow::handleTimeInput() {
+  bool ok;
+  double value = ui->timeInput->text().toDouble(&ok);
+  if (!ok) {
+    ui->statusBar->showMessage("Invalid input!", 2000);
+    auto center = ui->sigview->xAxis->range().center();
+    ui->timeInput->setText(QString::number(center / timeTicker->getSampleRate()) + "s");
+    return;
+  }
+  ui->sigview->xAxis->setRange(value * timeTicker->getSampleRate() - ui->sigview->xAxis->range().size() / 2,
+                               value * timeTicker->getSampleRate() + ui->sigview->xAxis->range().size() / 2);
+  ui->sigview->replot();
+}
+
+void MainWindow::handleTimeSliderChange(int value) {
+  if (signalData == nullptr) {
+    ui->statusBar->showMessage("No signal open!", 2000);
+    return;
+  }
+  ui->sigview->xAxis->setRange(value / 100.0 * signalData->signalSamples() - ui->sigview->xAxis->range().size() / 2,
+                               value / 100.0 * signalData->signalSamples() + ui->sigview->xAxis->range().size() / 2);
+  ui->sigview->replot();
 }

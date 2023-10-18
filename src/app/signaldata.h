@@ -25,6 +25,7 @@ class SignalData : public QObject {
   int maxChunksCached;
   QQueue<int> loadedChunks;
   SignalInfo signalInfo;
+  QFile signalFile;
 
  public:
   explicit SignalData(QCustomPlot* plot, SignalInfo signalInfo, int chunkSize = 5120, int maxChunksVisible = 1);
@@ -32,6 +33,7 @@ class SignalData : public QObject {
   virtual void loadChunk(int chunkIndex) = 0;
   virtual void unloadChunk(int chunkIndex) = 0;
   virtual void currentPSD(QVector<double>& frequency, QVector<double>& psd) = 0;
+  qsizetype signalSamples();
 
  public slots:
   void updateData();
@@ -49,7 +51,6 @@ class Complex64SignalData : public SignalData {
   void currentPSD(QVector<double>& frequency, QVector<double>& psd) override;
 
  private:
-  QFile signalFile;
   QCPGraph* graphI;
   QCPGraph* graphQ;
   QSharedPointer<QCPDataContainer<QCPGraphData>> graphDataI;
@@ -68,7 +69,6 @@ class Float32SignalData : public SignalData {
   void currentPSD(QVector<double>& frequency, QVector<double>& psd) override;
 
  private:
-  QFile signalFile;
   QCPGraph* graph;
   QSharedPointer<QCPDataContainer<QCPGraphData>> graphData;
 };
